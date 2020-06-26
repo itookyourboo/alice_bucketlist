@@ -61,7 +61,7 @@ def next_desire(res, req, session):
 
 
 @handler.command(words=WORDS['add'], states=State.USERS_LIST)
-def add_desire(res, req, session):
+def go_add_desire(res, req, session):
     pass
 
 
@@ -72,4 +72,12 @@ def complete_desire(res, req, session):
 
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)
 def search_desire(res, req, session):
+    pass
+
+
+"""-----------------State.ADD-----------------"""
+
+
+@handler.undefined_command(states=State.ADD)
+def add_desire(res, req, session):
     pass
