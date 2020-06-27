@@ -7,6 +7,7 @@ class State(Enum):
     USERS_LIST = 2
     ADD_DESIRE = 3
     ADD_TAGS = 4
+    CHOOSE_TAG = 4.5
     VIEW = 5
 
 

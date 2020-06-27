@@ -117,7 +117,7 @@ class Desire:
                     tags[t] += 1
                 else:
                     tags[t] = 1
-        return list(map(lambda x: x[0], sorted(tags.items(), key=lambda x: -x[1])))[:count]
+        return list(map(lambda x: x[0], sorted(tags.items(), key=lambda x: -x[1])))[:min(count, len(tags))]
 
     @staticmethod
     def find_by_tags(usr_id, tokens):
