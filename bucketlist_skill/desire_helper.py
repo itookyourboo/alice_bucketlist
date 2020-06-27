@@ -13,7 +13,6 @@ def create_desire_table():
                    'id integer primary key autoincrement, '
                    'text string not null,'
                    'tags string,'
-                   'published integer not null,'
                    'owner_id integer);')
 
 
@@ -61,8 +60,8 @@ class Desire:
     @staticmethod
     def add_desire(text, tags, usr_id):
         id_, user_id = User.get_user(user_id=usr_id)
-        cursor.execute("insert into desire(user_id, text, tags, published) values(?, ?, ?, ?)",
-                       (user_id, text, tags, 1))
+        cursor.execute("insert into desire(user_id, text, tags) values(?, ?, ?, ?)",
+                       (user_id, text, tags))
         db.commit()
 
         desire_id, user_id, text, tags, published, owner_id  = Desire.get_desire(text, usr_id)
@@ -76,28 +75,7 @@ class Desire:
         db.commit()
 
     @staticmethod
-    def offer_desire(text, usr_id):
-        id_, user_id = User.get_user(user_id=usr_id)
-        cursor.execute("insert into desire (text, owner_id, published) values(?, ?, ?)",
-                       (text, id_, 0))
-        db.commit()
-
-    @staticmethod
     def get_desire(text, usr_id):
         id_, user_id = User.get_user(user_id=usr_id)
         return cursor.execute(f"select * from desire where text = '{text}' and owner_id = {id_}").fetchone()
 
-    @staticmethod
-    def add_local_desire(text, usr_id):
-        id_, user_id = User.get_user(user_id=usr_id)
-        cursor.execute("insert into user_desire (text, own")
-        cursor.execute("insert into desire (text, owner_id, published) values(?, ?, ?)",
-                       (text, id_, 0))
-        db.commit()
-
-    @staticmethod
-    def add_published_desire(text, tags, usr_id):
-        id_, user_id = User.get_user(user_id=usr_id)
-        cursor.execute("insert into desire (text, tags, owner_id, published) values(?, ?, ?)",
-                       (text, tags, id_, 1))
-        db.commit()
