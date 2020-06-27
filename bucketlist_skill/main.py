@@ -143,3 +143,11 @@ def add_tags(req, res, session):
     else:
         res.text = txt(TEXT['ok_add'])
         Desire.add_desire(session['text_desire'], ','.join(req.tokens).strip(','), req.user_id)
+
+
+@handler.undefined_command(states=State.ALL)
+@save_res
+@default_buttons
+def wtf(req, res, session):
+    res.text = HELP[session['state']]
+    # TODO: write to wtf.txt
