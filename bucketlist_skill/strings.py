@@ -1,5 +1,8 @@
 from random import choice
 
+from .state import State
+
+
 TEXT = {
     'hello': 'Привет!',
     'help': 'Вот те помощь',
@@ -24,9 +27,21 @@ WORDS = {
     'complete': 'выполнил/выполнено',
     'search': 'найти/поиск'
 }
+
 for w in WORDS:
     WORDS[w] = tuple(WORDS[w].split('/'))
 
 
+BUTTONS = {
+    State.MENU: ('Список желаний', 'Мои желания', 'Добавить желание', 'Помощь', 'Что ты умеешь?')
+}
+
+
 def txt(string):
     return choice(string)
+
+
+def btn(string):
+    if isinstance(string, tuple):
+        return list(map(lambda x: txt(x.split('/')), string))
+    return txt(string.split('/')),
