@@ -1,6 +1,8 @@
 from base_skill.skill import CommandHandler, BaseSkill, button
-from .strings import TEXT, WORDS, txt
+from .strings import TEXT, WORDS, txt, HELP
 from .state import State
+from .ui_helper import default_buttons, save_res
+
 
 handler = CommandHandler()
 
@@ -14,17 +16,21 @@ class BucketListSkill(BaseSkill):
 
 
 @handler.hello_command
+@save_res
+@default_buttons
 def hello(req, res, session):
     res.text = txt(TEXT['hello'])
     session['state'] = State.MENU
 
 
 @handler.command(words=WORDS['help'], states=State.ALL)
+@default_buttons
 def help_(res, req, session):
-    res.text = txt(TEXT['help'])
+    res.text = txt(HELP[session['state']])
 
 
 @handler.command(words=WORDS['ability'], states=State.ALL)
+@default_buttons
 def ability_(res, req, session):
     res.text = txt(TEXT['ability'])
 
@@ -41,14 +47,18 @@ def exit_(res, req, session):
 
 
 @handler.command(words=WORDS['repeat'], states=State.ALL)
+@default_buttons
 def repeat_(res, req, session):
-    pass
+    res.text = session['last_text']
+    res.tts = session['last_tts']
 
 
 """-----------------State.MENU-----------------"""
 
 
 @handler.command(words=WORDS['list'], states=State.MENU)
+@save_res
+@default_buttons
 def get_list(res, req, session):
     if WORDS['my']:
         session['state'] = State.USERS_LIST
@@ -60,6 +70,8 @@ def get_list(res, req, session):
 
 
 @handler.command(words=WORDS['next'], states=State.OTHERS_LIST)
+@save_res
+@default_buttons
 def next_desire(res, req, session):
     pass
 
@@ -68,23 +80,35 @@ def next_desire(res, req, session):
 
 
 @handler.command(words=WORDS['add'], states=State.USERS_LIST)
+@save_res
+@default_buttons
 def go_add_desire(res, req, session):
-    pass
+    res.text = txt(TEXT['go_add'])
+    session['state'] = State.ADD
 
 
 @handler.command(words=WORDS['complete'], states=State.USERS_LIST)
+@save_res
+@default_buttons
 def complete_desire(res, req, session):
     pass
 
 
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)
+@save_res
+@default_buttons
 def search_desire(res, req, session):
-    pass
+    session['state'] = State.OTHERS_LIST
 
 
 """-----------------State.ADD-----------------"""
 
 
 @handler.undefined_command(states=State.ADD)
+@save_res
+@default_buttons
 def add_desire(res, req, session):
-    pass
+    if req.command:
+        res.text = txt(TEXT['ok_add'])
+    else:
+        res.text = txt(TEXT['else_add'])
