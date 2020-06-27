@@ -64,11 +64,14 @@ def repeat_(req, res, session):
 def get_list(req, res, session):
     if any(word in req.tokens for word in WORDS['my']):
         session['state'] = State.USERS_LIST
-        completed_desires = Desire.get_completed_desires(req.user_id)
-        uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
-        res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
-        session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.user_id, local=True)
+        if len(session['users_desire_list']) != 0:
+            completed_desires = Desire.get_completed_desires(req.user_id)
+            uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
+            res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+            session['users_list_count'] = 0
+        else:
+            res.text = txt(TEXT['empty_list'])
     else:
         session['state'] = State.CHOOSE_TAG
         desire_tags = Desire.get_tags()
@@ -131,8 +134,8 @@ def complete_desire(req, res, session):
     for desire in users_desires:
         if 0.5 < sequence(None, req.command, desire.text).ratio():
             complete_desire(req.user_id, desire.id)
+            res.text = txt(TEXT['completed_desire'])
             break
-    res.text = txt(TEXT['completed_desire'])
 
 
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)
