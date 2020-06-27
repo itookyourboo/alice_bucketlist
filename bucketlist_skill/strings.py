@@ -1,3 +1,15 @@
+from random import choice
+
+TEXT = {
+    'hello': 'Привет!',
+    'help': 'Вот те помощь',
+    'ability': 'Я умею это',
+    'bye': 'Пока!',
+    'back': 'Ты в меню'
+}
+for t in TEXT:
+    TEXT[t] = tuple(TEXT[t].split('/'))
+
 WORDS = {
     'exit': 'выход/хватит/пока/свидания/стоп/выйти/выключи/останови/остановить/отмена/закончить/'
             'закончи/отстань/назад/обратно/верни/вернись',
@@ -14,3 +26,7 @@ WORDS = {
 }
 for w in WORDS:
     WORDS[w] = tuple(WORDS[w].split('/'))
+
+
+def txt(string):
+    return choice(string)
