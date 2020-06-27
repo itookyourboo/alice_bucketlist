@@ -1,4 +1,12 @@
-from flask_app import db
+from flask import Flask, request
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqldatabase.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'key?'
+db = SQLAlchemy(app)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,83 +34,58 @@ class User(db.Model):
         db.session.commit()
 
 
-class Category(db.Model):
+class Desire(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, unique=False, nullable=False)
-
-    def __repr__(self):
-        return "<Category {} {}>".format(self.id, self.name)
-
-    @staticmethod
-    def add_new_category(name):
-        category = Category(name=name)
-        db.session.add(category)
-        db.session.commit()
-        return category
-
-    @staticmethod
-    def get_category(category_id):
-        category = db.session.query(Category).filter_by(id=category_id).first()
-        return category
-
-    @staticmethod
-    def delete_category(category_id):
-        category = db.session.query(Category).filter_by(id=category_id).first()
-        db.session.delete(category)
-        db.session.commit()
-
-
-class StandardDesire(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    category_id = db.Column(db.Integer, unique=False, nullable=False)
+    tags = db.Column(db.String, unique=False, nullable=False)
     text = db.Column(db.String, unique=False, nullable=False)
+    published = db.Column(db.Bool, unique=False, nullable=False)
 
     def __repr__(self):
-        return "<StandardDesire {} {} {}>".format(self.id, self.category_id, self.text)
+        return "<Desire {} {} {} {}>".format(self.id, self.tags, self.text, self.published)
 
     @staticmethod
-    def add_new_standard_desire(text, category_id):
-        standard_desire = StandardDesire(text=text, category_id=category_id)
+    def add_new_standard_desire(text, category_id, tags):
+        standard_desire = Desire(text=text, category_id=category_id, tags=tags)
         db.session.add(standard_desire)
         db.session.commit()
         return standard_desire
 
     @staticmethod
-    def get_standard_desire(standard_desire_id):
-        standard_desire = db.session.query(StandardDesire).filter_by(id=standard_desire_id).first()
+    def get_standard_desire(desire_id):
+        standard_desire = db.session.query(Desire).filter_by(id=desire_id).first()
         return standard_desire
 
     @staticmethod
-    def delete_standard_desire(standard_desire_id):
-        standard_desire = db.session.query(StandardDesire).filter_by(id=standard_desire_id).first()
+    def delete_standard_desire(desire_id):
+        standard_desire = db.session.query(Desire).filter_by(id=desire_id).first()
         db.session.delete(standard_desire)
         db.session.commit()
 
 
 class UsersDesire(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    category_id = db.Column(db.Integer, unique=False, nullable=False)
     user_id = db.Column(db.Integer, unique=False, nullable=False)
-    text = db.Column(db.String, unique=False, nullable=False)
+    desire_id = db.Column(db.Integer, unique=False, nullable=False)
+    completed = db.Column(db.Bool, unique=False, nullable=False)
 
     def __repr__(self):
-        return "<UsersDesire {} {} {} {}>".format(self.id, self.category_id, self.user_id, self.text)
+        return "<UsersDesire {} {} {} {}>".format(self.id, self.user_id, self.desire_id, self.completed)
 
     @staticmethod
-    def add_new_users_desire(text, category_id):
-        users_desire = UsersDesire(text=text, category_id=category_id)
+    def add_new_users_desire(user_id, desire_id, category_id):
+        users_desire = UsersDesire(user_id=user_id, desire_i=desire_id, category_id=category_id)
         db.session.add(users_desire)
         db.session.commit()
         return users_desire
 
     @staticmethod
-    def get_users_desire(users_desire_id):
-        users_desire = db.session.query(UsersDesire).filter_by(id=users_desire_id).first()
+    def get_users_desire(desire_id):
+        users_desire = db.session.query(UsersDesire).filter_by(desire_id=desire_id).first()
         return users_desire
 
     @staticmethod
-    def delete_users_desire(users_desire_id):
-        users_desire = db.session.query(UsersDesire).filter_by(id=users_desire_id).first()
+    def delete_users_desire(desire_id):
+        users_desire = db.session.query(UsersDesire).filter_by(desire_id=desire_id).first()
         db.session.delete(users_desire)
         db.session.commit()
 
