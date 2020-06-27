@@ -3,7 +3,6 @@ from .strings import TEXT, WORDS, txt, HELP
 from .state import State
 from .ui_helper import default_buttons, save_res
 
-
 handler = CommandHandler()
 
 
@@ -60,8 +59,9 @@ def repeat_(res, req, session):
 @save_res
 @default_buttons
 def get_list(res, req, session):
-    if WORDS['my']:
+    if any(word in req.tokens for word in WORDS['my']):
         session['state'] = State.USERS_LIST
+
     else:
         session['state'] = State.OTHERS_LIST
 
@@ -73,6 +73,13 @@ def get_list(res, req, session):
 @save_res
 @default_buttons
 def next_desire(res, req, session):
+    pass
+
+
+@handler.command(words=WORDS['tags'], states=State.OTHERS_LIST)
+@save_res
+@default_buttons
+def tags(res, req, session):
     pass
 
 
@@ -99,6 +106,7 @@ def complete_desire(res, req, session):
 @default_buttons
 def search_desire(res, req, session):
     session['state'] = State.OTHERS_LIST
+    res.text = txt(TEXT['other_list'])
 
 
 """-----------------State.ADD-----------------"""
@@ -108,7 +116,8 @@ def search_desire(res, req, session):
 @save_res
 @default_buttons
 def add_desire(res, req, session):
-    if req.command:
+    if req.dangerous:
         res.text = txt(TEXT['ok_add'])
+
     else:
         res.text = txt(TEXT['else_add'])

@@ -61,6 +61,10 @@ class Request:
     def entities(self):
         return self.req['request']['nlu']['entities']
 
+    @property
+    def dangerous(self):
+        return self.req['request'].get('markup', {}).get('dangerous_context', {})
+
 
 class Response:
     def __init__(self, res):
