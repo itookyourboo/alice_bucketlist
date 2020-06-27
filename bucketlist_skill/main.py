@@ -69,10 +69,18 @@ def get_list(req, res, session):
         session['state'] = State.USERS_LIST
         completed_desires = Desire.get_completed_desires(req.user_id)
         uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
-        res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+        if len(completed_desires) == 0 and len(uncompleted_desires) == 0:
+            res.text = txt(TEXT['empty_list'])
+        elif len(completed_desires) == 0:
+            res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+            res.text = res.text + '\nВы не выполнили:\n' + '\n'.join(x[1] for x in uncompleted_desires)
+        elif len(uncompleted_desires) == 0:
+            res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+        else:
+            res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+            res.text = res.text + '\nВы не выполнили:\n' + '\n'.join(x[1] for x in uncompleted_desires)
         session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.user_id, local=True)
-        res.text = res.text + '\nВы не выполнили:\n' + '\n'.join(x[1] for x in uncompleted_desires)
     else:
         session['state'] = State.CHOOSE_TAG
         desire_tags = Desire.get_tags()

@@ -91,12 +91,14 @@ class Desire:
     @staticmethod
     def get_completed_desires(usr_id):
         id_, _ = User.get_user(user_id=usr_id)
-        return cursor.execute(f"select * from user_desire where user_id = {id_} and completed = 1").fetchall()
+        return cursor.execute(f"select * from desire where owner_id in "
+                              f"(select user_id from user_desire where user_id = {id_} and completed = 1)").fetchall()
 
     @staticmethod
     def get_uncompleted_desires(usr_id):
         id_, _ = User.get_user(user_id=usr_id)
-        return cursor.execute(f"select * from user_desire where user_id = {id_} and completed = 0").fetchall()
+        return cursor.execute(f"select * from desire where owner_id in "
+                              f"(select user_id from user_desire where user_id = {id_} and completed = 0)").fetchall()
 
     @staticmethod
     def how_many_added(desire_id):
