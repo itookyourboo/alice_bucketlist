@@ -156,6 +156,18 @@ def complete_desire(req, res, session):
         res.text = txt(TEXT['ne_ponel'])
 
 
+@handler.command(words=WORDS['delete'], states=State.USERS_LIST)
+@save_res
+@default_buttons
+def delete_desire(req, res, session):
+    users_desires = Desire.get_desires(req.user_id, local=True)
+    for desire in users_desires:
+        if 0.5 < sequence(None, req.command, desire.text).ratio():
+            Desire.complete_desire(req.user_id, desire.id)
+            break
+    res.text = txt(TEXT['deleted_desire'])
+
+
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)
 @save_res
 @default_buttons
