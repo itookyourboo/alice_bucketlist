@@ -86,7 +86,7 @@ def get_list(req, res, session):
         desire_tags = Desire.get_tags()
         res.buttons = [button(x) for x in desire_tags]
         res.text = txt(TEXT['other_list'])
-        res.tts += " ".join(desire_tags)
+        res.tts += "sil <[300]>" + "sil <[400]>".join(desire_tags)
 
 
 @handler.undefined_command(states=State.CHOOSE_TAG)
