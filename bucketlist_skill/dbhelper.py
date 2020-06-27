@@ -1,11 +1,4 @@
-from flask import Flask, request
-from flask_sqlalchemy import SQLAlchemy
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqldatabase.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'key?'
-db = SQLAlchemy(app)
+from flask_app import db
 
 
 class User(db.Model):
@@ -39,6 +32,7 @@ class Desire(db.Model):
     tags = db.Column(db.String, unique=False, nullable=False)
     text = db.Column(db.String, unique=False, nullable=False)
     published = db.Column(db.Bool, unique=False, nullable=False)
+    owner_id = db.Column(db.Integer, unique=False, nullable=True)
 
     def __repr__(self):
         return "<Desire {} {} {} {}>".format(self.id, self.tags, self.text, self.published)
