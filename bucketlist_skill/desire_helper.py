@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from difflib import SequenceMatcher as sequence
 
 
 def create_user_table():
@@ -135,3 +136,16 @@ class Desire:
         return cursor.execute(f"select * from desire where user_id not in "
                               f"(select user_id from user_desire where user_id = {id_}) "
                               f"order by random() limit 1").fetchone()
+
+    @staticmethod
+    def find_by_text(usr_id, text):
+        desires = Desire.get_desires(usr_id, local=True)
+        mx = 0
+        mx_desire = None
+        for desire in desires:
+            ratio = sequence(None, desire[1].lower(), text.lower()).ratio()
+            if ratio > max(0.5, mx):
+                mx = ratio
+                mx_desire = desire
+
+        return mx > 0.5, mx_desire
