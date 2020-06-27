@@ -67,13 +67,33 @@ def get_list(req, res, session):
         uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
         res.text = txt(TEXT['users_list']).format(completed_desires, uncompleted_desires)
         session['users_list_count'] = 0
-        session['users_desire_list'] = Desire.get_desires(req.user_id, local=False)
+        session['users_desire_list'] = Desire.get_desires(req.user_id, local=True)
     else:
-        session['state'] = State.OTHERS_LIST
+        session['state'] = State.CHOOSE_TAG
         desire_tags = Desire.get_tags()
         res.buttons = [button(x) for x in desire_tags]
         res.text = txt(TEXT['other_list'])
         res.tts += " ".join(desire_tags)
+
+
+@handler.undefined_command(states=State.CHOOSE_TAG)
+@save_res
+@default_buttons
+def choose_tag(req, res, session):
+    if 'все' in req.tokens:
+        session['users_list_count'] = 0
+        session['users_desire_list'] = Desire.get_desires(req.tokens, local=False)
+        session['state'] = State.OTHERS_LIST
+        res.text = session['users_desire_list'][session['users_list_count']][1]
+    else:
+        result = Desire.find_by_tags(req.user_id, req.tokens)
+        if len(result) == 0:
+            res.text = 'Извините, я ничего не нашла.'
+        else:
+            session['users_list_count'] = 0
+            session['users_desire_list'] = result
+            session['state'] = State.OTHERS_LIST
+            res.text = session['users_desire_list'][session['users_list_count']][1]
 
 
 """-----------------State.LIST-----------------"""
