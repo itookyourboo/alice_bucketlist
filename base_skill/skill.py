@@ -184,14 +184,14 @@ class CommandHandler:
             if session.get('state', 0) not in cmd.states:
                 continue
             if any(word in cmd.words for word in tokens):
-                cmd.execute(req, res, session)
+                cmd.execute(req=req, res=res, session=session)
                 executed = True
                 break
 
         if not executed and len(self.undefined):
             for cmd in self.undefined:
                 if session.get('state', 0) in cmd.states or cmd.states is None:
-                    cmd.execute(req, res, session)
+                    cmd.execute(req=req, res=res, session=session)
                     return
 
     def command(self, words, states):

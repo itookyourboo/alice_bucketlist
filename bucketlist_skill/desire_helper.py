@@ -46,7 +46,7 @@ class User:
     def add_user(user_id):
         if User.user_exists(user_id):
             return
-        cursor.execute(f"insert into user(user_id) values(?)", user_id)
+        cursor.execute(f"insert into user(user_id) values(?)", (user_id, ))
         db.commit()
 
     @staticmethod
