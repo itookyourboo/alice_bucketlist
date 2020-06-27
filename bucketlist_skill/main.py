@@ -98,7 +98,7 @@ def choose_tag(req, res, session):
         session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.tokens, local=False)
         session['state'] = State.VIEW
-        res.text = session['users_desire_list'][session['users_list_count']][1]
+        res.text = txt(TEXT['intro']) + '\n' + session['users_desire_list'][session['users_list_count']][1]
     else:
         result = Desire.find_by_tags(req.user_id, req.tokens)
         if len(result) == 0:
@@ -107,7 +107,7 @@ def choose_tag(req, res, session):
             session['users_list_count'] = 0
             session['users_desire_list'] = result
             session['state'] = State.VIEW
-            res.text = session['users_desire_list'][session['users_list_count']][1]
+            res.text = txt(TEXT['intro']) + '\n' + session['users_desire_list'][session['users_list_count']][1]
 
 
 """-----------------State.LIST-----------------"""
@@ -175,6 +175,14 @@ def search_desire(req, res, session):
     res.buttons = [button(x) for x in desire_tags]
     res.text = txt(TEXT['other_list'])
     res.tts += " ".join(desire_tags)
+
+
+@handler.command(words=WORDS['more'], states=State.USERS_LIST)
+@save_res
+@default_buttons
+def more(req, res, session):
+    res.text = 'Вы выполнили: ' + '\n'.join([x[1] for x in Desire.get_uncompleted_desires(req.user_id)])
+    res.text = res.text + '\nВы можете добавить свое желание, найти идею, выполнить или удалить идею.'
 
 
 """-----------------State.ADD_DESIRE-----------------"""
