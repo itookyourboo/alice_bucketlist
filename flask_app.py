@@ -4,14 +4,14 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqldatabase.db'
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['SECRET_KEY'] = 'key?'
-# db = SQLAlchemy(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqldatabase.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'key?'
+db = SQLAlchemy(app)
 
-from bucketlist_skill.main import TimeSkill
+from bucketlist_skill.main import BucketListSkill
 
-SKILLS = [TimeSkill()]
+SKILLS = [BucketListSkill()]
 skill_dict = {skill.name: skill for skill in SKILLS}
 sessionStorage = {
     skill.name: {} for skill in SKILLS
