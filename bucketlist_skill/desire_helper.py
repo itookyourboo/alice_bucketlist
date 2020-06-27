@@ -79,3 +79,21 @@ class Desire:
         id_, user_id = User.get_user(user_id=usr_id)
         return cursor.execute(f"select * from desire where text = '{text}' and owner_id = {id_}").fetchone()
 
+    @staticmethod
+    def get_desires(usr_id, local=False):
+        id_, _ = User.get_user(user_id=usr_id)
+        if local:
+            return cursor.execute(f"select * from user_desire where user_id = {id_}").fetchall()
+        return cursor.execute(f"select * from desire where user_id not (select user_id from user_desire)").fetchall()
+
+    @staticmethod
+    def get_tags(count=5):
+        lines = cursor.execute(f"select tags from desire").fetchall()
+        tags = {}
+        for line in lines:
+            for t in line[0].split(','):
+                if t in tags:
+                    tags[t] += 1
+                else:
+                    tags[t] = 1
+        return list(map(lambda x: x[0], sorted(tags.items(), key=lambda x: -x[1])))[:count]
