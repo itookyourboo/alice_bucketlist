@@ -26,18 +26,18 @@ def hello(req, res, session):
 
 @handler.command(words=WORDS['help'], states=State.ALL)
 @default_buttons
-def help_(res, req, session):
-    res.text = txt(HELP[session['state']])
+def help_(req, res, session):
+    res.text = HELP[session['state']]
 
 
 @handler.command(words=WORDS['ability'], states=State.ALL)
 @default_buttons
-def ability_(res, req, session):
+def ability_(req, res, session):
     res.text = txt(TEXT['ability'])
 
 
 @handler.command(words=WORDS['exit'], states=State.ALL)
-def exit_(res, req, session):
+def exit_(req, res, session):
     if session['state'] == State.MENU:
         res.end_session = True
         session.clear()
@@ -49,7 +49,7 @@ def exit_(res, req, session):
 
 @handler.command(words=WORDS['repeat'], states=State.ALL)
 @default_buttons
-def repeat_(res, req, session):
+def repeat_(req, res, session):
     res.text = session['last_text', 'Нечего повторять']
     res.tts = session.get('last_tts', 'Нечего повторять')
 
@@ -60,7 +60,7 @@ def repeat_(res, req, session):
 @handler.command(words=WORDS['list'], states=State.MENU)
 @save_res
 @default_buttons
-def get_list(res, req, session):
+def get_list(req, res, session):
     if any(word in req.tokens for word in WORDS['my']):
         session['state'] = State.USERS_LIST
         completed_desires = Desire.get_completed_desires(req.user_id)
@@ -71,18 +71,18 @@ def get_list(res, req, session):
     else:
         session['state'] = State.OTHERS_LIST
         desire_tags = Desire.get_tags()
-        res.buttons = [button(x) for x in btn(desire_tags)]
-        res.text = res.tts = txt(TEXT['other_list'])
+        res.buttons = [button(x) for x in desire_tags]
+        res.text = txt(TEXT['other_list'])
         res.tts += " ".join(desire_tags)
 
 
 """-----------------State.LIST-----------------"""
 
 
-@handler.command(words=WORDS['next'], states=State.OTHERS_LIST + (State.USERS_LIST,))
+@handler.command(words=WORDS['next'], states=(State.OTHERS_LIST, State.USERS_LIST))
 @save_res
 @default_buttons
-def next_desire(res, req, session):
+def next_desire(req, res, session):
     if State.OTHERS_LIST:
         res.text = Desire.get_random_desire(req.user_id).text
     else:
@@ -96,7 +96,7 @@ def next_desire(res, req, session):
 @handler.command(words=WORDS['add'], states=State.USERS_LIST)
 @save_res
 @default_buttons
-def go_add_desire(res, req, session):
+def go_add_desire(req, res, session):
     res.text = txt(TEXT['go_add'])
     session['state'] = State.ADD
 
@@ -104,14 +104,14 @@ def go_add_desire(res, req, session):
 @handler.command(words=WORDS['complete'], states=State.USERS_LIST)
 @save_res
 @default_buttons
-def complete_desire(res, req, session):
+def complete_desire(req, res, session):
     pass
 
 
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)
 @save_res
 @default_buttons
-def search_desire(res, req, session):
+def search_desire(req, res, session):
     session['state'] = State.OTHERS_LIST
     res.text = txt(TEXT['other_list'])
 
@@ -119,10 +119,10 @@ def search_desire(res, req, session):
 """-----------------State.ADD_DESIRE-----------------"""
 
 
-@handler.undefined_command(states=State.ADD)
+@handler.undefined_command(states=State.ADD_DESIRE)
 @save_res
 @default_buttons
-def add_desire(res, req, session):
+def add_desire(req, res, session):
     if not req.dangerous:
         res.text = txt(TEXT['add_tag'])
         session['text_desire'] = req.command.capitalize()
@@ -137,7 +137,7 @@ def add_desire(res, req, session):
 @handler.undefined_command(states=State.ADD_TAGS)
 @save_res
 @default_buttons
-def add_tags(res, req, session):
+def add_tags(req, res, session):
     if any(word in req.tokens for word in WORDS['no']):
         Desire.add_desire(session['text_desire'], 'все', req.user_id)
     else:
