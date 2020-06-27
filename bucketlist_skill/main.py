@@ -69,15 +69,16 @@ def get_list(req, res, session):
         session['state'] = State.USERS_LIST
         completed_desires = Desire.get_completed_desires(req.user_id)
         uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
-        if len(completed_desires) == 0 and len(uncompleted_desires) == 0:
+        len_compl, len_uncompl = len(completed_desires), len(uncompleted_desires)
+        if len_compl == 0 and len_uncompl == 0:
             res.text = txt(TEXT['empty_list'])
-        elif len(completed_desires) == 0:
-            res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+        elif len_compl == 0:
+            res.text = txt(TEXT['users_list']).format(len_compl, Desire.morph(len_compl), len_uncompl)
             res.text = res.text + '\nВы не выполнили:\n' + '.\n'.join(x[1] for x in uncompleted_desires)
-        elif len(uncompleted_desires) == 0:
-            res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+        elif len_uncompl == 0:
+            res.text = txt(TEXT['users_list']).format(len_compl, Desire.morph(len_compl), len_uncompl)
         else:
-            res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
+            res.text = txt(TEXT['users_list']).format(len_compl, Desire.morph(len_compl), len_uncompl)
             res.text = res.text + '\nВы не выполнили:\n' + '\n'.join(x[1] for x in uncompleted_desires)
         session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.user_id, local=True)
@@ -86,7 +87,7 @@ def get_list(req, res, session):
         desire_tags = Desire.get_tags()
         res.buttons = [button(x) for x in desire_tags]
         res.text = txt(TEXT['other_list'])
-        res.tts += "sil <[300]>" + "sil <[400]>".join(desire_tags)
+        res.tts = res.tts + "Например sil <[300]>" + "sil <[400]>".join(desire_tags)
 
 
 @handler.undefined_command(states=State.CHOOSE_TAG)
