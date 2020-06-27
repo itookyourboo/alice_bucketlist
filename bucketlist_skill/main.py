@@ -2,6 +2,7 @@ from base_skill.skill import CommandHandler, BaseSkill, button
 from .strings import TEXT, WORDS, txt, HELP
 from .state import State
 from .ui_helper import default_buttons, save_res
+from .desire_helper import Desire, User
 
 handler = CommandHandler()
 
@@ -19,6 +20,7 @@ class BucketListSkill(BaseSkill):
 @default_buttons
 def hello(req, res, session):
     res.text = txt(TEXT['hello'])
+    User.add_user(req.user_id)
     session['state'] = State.MENU
 
 
@@ -109,7 +111,7 @@ def search_desire(res, req, session):
     res.text = txt(TEXT['other_list'])
 
 
-"""-----------------State.ADD-----------------"""
+"""-----------------State.ADD_DESIRE-----------------"""
 
 
 @handler.undefined_command(states=State.ADD)
@@ -117,7 +119,20 @@ def search_desire(res, req, session):
 @default_buttons
 def add_desire(res, req, session):
     if req.dangerous:
-        res.text = txt(TEXT['ok_add'])
+        res.text = txt(TEXT['add_tag'])
+        session['text_desire'] = req.command.capitalize()
 
     else:
         res.text = txt(TEXT['else_add'])
+
+
+"""-----------------State.ADD_TAGS-----------------"""
+
+
+@handler.undefined_command(states=State.ADD_TAGS)
+@save_res
+@default_buttons
+def add_tags(res, req, session):
+    res.text = txt(TEXT['ok_add'])
+    Desire.add_desire(session['text_desire'], ','.join(req.tokens).strip(','), req.user_id)
+
