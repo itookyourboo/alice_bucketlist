@@ -1,5 +1,5 @@
-from base_skill.skill import *
-from .strings import *
+from base_skill.skill import CommandHandler, BaseSkill, button
+from .strings import TEXT, WORDS, txt
 from .state import State
 
 handler = CommandHandler()
@@ -15,22 +15,29 @@ class BucketListSkill(BaseSkill):
 
 @handler.hello_command
 def hello(req, res, session):
+    res.text = txt(TEXT['hello'])
     session['state'] = State.MENU
 
 
 @handler.command(words=WORDS['help'], states=State.ALL)
 def help_(res, req, session):
-    pass
+    res.text = txt(TEXT['help'])
 
 
 @handler.command(words=WORDS['ability'], states=State.ALL)
 def ability_(res, req, session):
-    pass
+    res.text = txt(TEXT['ability'])
 
 
 @handler.command(words=WORDS['exit'], states=State.ALL)
 def exit_(res, req, session):
-    pass
+    if session['state'] == State.MENU:
+        res.end_session = True
+        session.clear()
+        res.text = txt(TEXT['bye'])
+    else:
+        session['state'] = State.MENU
+        res.text = txt(TEXT['back'])
 
 
 @handler.command(words=WORDS['repeat'], states=State.ALL)
