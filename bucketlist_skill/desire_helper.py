@@ -166,3 +166,16 @@ class Desire:
                 mx_desire = desire
 
         return mx > 0.5, mx_desire
+
+    @staticmethod
+    def morph(num):
+        if 10 <= num % 100 <= 20:
+            return 'желаний'
+
+        elif (num % 10) in (0, 5, 6, 7, 8, 9):
+            return 'желаний'
+
+        elif num % 10 == 1:
+            return 'желание'
+        elif (num % 10) in (2, 3, 4):
+            return 'желания'
