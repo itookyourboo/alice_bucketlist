@@ -54,7 +54,7 @@ def exit_(req, res, session):
 @handler.command(words=WORDS['repeat'], states=State.ALL)
 @default_buttons
 def repeat_(req, res, session):
-    res.text = session('last_text', 'Нечего повторять')
+    res.text = session.get('last_text', 'Нечего повторять')
     res.tts = session.get('last_tts', 'Нечего повторять')
 
 
@@ -73,7 +73,7 @@ def get_list(req, res, session):
             res.text = txt(TEXT['empty_list'])
         elif len(completed_desires) == 0:
             res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
-            res.text = res.text + '\nВы не выполнили:\n' + '\n'.join(x[1] for x in uncompleted_desires)
+            res.text = res.text + '\nВы не выполнили:\n' + '.\n'.join(x[1] for x in uncompleted_desires)
         elif len(uncompleted_desires) == 0:
             res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
         else:
@@ -93,7 +93,7 @@ def get_list(req, res, session):
 @save_res
 @default_buttons
 def choose_tag(req, res, session):
-    if 'все' in req.tokens:
+    if any(x in req.tokens for x in WORDS['all']):
         session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.tokens, local=False)
         session['state'] = State.VIEW
@@ -112,7 +112,7 @@ def choose_tag(req, res, session):
 """-----------------State.LIST-----------------"""
 
 
-@handler.command(words=WORDS['next'], states=(State.VIEW, State.USERS_LIST))
+@handler.command(words=WORDS['next'], states=State.VIEW)
 @save_res
 @default_buttons
 def next_desire(req, res, session):
@@ -122,6 +122,15 @@ def next_desire(req, res, session):
         session['users_list_count'] += 1
         session['users_list_count'] %= session['users_desire_list']
         res.text = session['users_desire_list'][session['users_list_count']][1]
+
+
+@handler.command(words=WORDS['add'], states=State.VIEW)
+@save_res
+@default_buttons
+def add_to_my(req, res, session):
+    desire = session['users_desire_list'][session['users_list_count']]
+    Desire.add_to_user(req.user_id, desire[0])
+    res.text = 'Добавила! Скажите дальше, чтобы показать ещё.'
 
 
 """-----------------State.USERS_LIST-----------------"""
@@ -139,12 +148,12 @@ def go_add_desire(req, res, session):
 @save_res
 @default_buttons
 def complete_desire(req, res, session):
-    users_desires = Desire.get_desires(req.user_id, local=True)
-    for desire in users_desires:
-        if 0.5 < sequence(None, req.command, desire.text).ratio():
-            Desire.complete_desire(req.user_id, desire.id)
-            break
-    res.text = txt(TEXT['completed_desire'])
+    found, desire = Desire.find_by_text(req.user_id, req.text)
+    if found:
+        Desire.complete_desire(req.user_id, desire[0])
+        res.text = txt(TEXT['completed_desire'])
+    else:
+        res.text = txt(TEXT['ne_ponel'])
 
 
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)
@@ -185,6 +194,8 @@ def add_tags(req, res, session):
     else:
         res.text = txt(TEXT['ok_add'])
         Desire.add_desire(session['text_desire'], ','.join(req.tokens).strip(','), req.user_id)
+        session['state'] = State.MENU
+        res.text += '\n' + txt(TEXT['back'])
 
 
 @handler.undefined_command(states=State.ALL)

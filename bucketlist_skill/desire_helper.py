@@ -46,7 +46,7 @@ class User:
     def add_user(user_id):
         if User.user_exists(user_id):
             return
-        cursor.execute(f"insert into user(user_id) values(?)", (user_id, ))
+        cursor.execute(f"insert into user(user_id) values(?)", (user_id,))
         db.commit()
 
     @staticmethod
@@ -58,6 +58,13 @@ class User:
 
 
 class Desire:
+    @staticmethod
+    def add_to_user(usr_id, desire_id):
+        id_, user_id = User.get_user(user_id=usr_id)
+        cursor.execute("insert into user_desire(user_id, desire_id, completed) values(?, ?, ?)",
+                       (id_, desire_id, 0))
+        db.commit()
+
     @staticmethod
     def add_desire(text, tags, usr_id):
         id_, user_id = User.get_user(user_id=usr_id)
@@ -72,7 +79,8 @@ class Desire:
 
     @staticmethod
     def complete_desire(usr_id, desire_id):
-        cursor.execute(f"update user_desire set completed = 1 where desire_id = {desire_id}")
+        id_, _ = User.get_user(user_id=usr_id)
+        cursor.execute(f"update user_desire set completed = 1 where desire_id = {desire_id} and user_id = {id_}")
         db.commit()
 
     @staticmethod
@@ -85,8 +93,8 @@ class Desire:
         id_, _ = User.get_user(user_id=usr_id)
         if local:
             return cursor.execute(f"select * from user_desire where user_id = {id_}").fetchall()
-        return cursor.execute(f"select * from desire where owner_id not in "
-                              f"(select user_id from user_desire where user_id = {id_})").fetchall()
+        return cursor.execute(f"select * from desire where id not in "
+                              f"(select desire_id from user_desire where user_id = {id_})").fetchall()
 
     @staticmethod
     def get_completed_desires(usr_id):
