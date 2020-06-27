@@ -26,18 +26,21 @@ def hello(req, res, session):
 
 
 @handler.command(words=WORDS['help'], states=State.ALL)
+@save_res
 @default_buttons
 def help_(req, res, session):
     res.text = HELP[session['state']]
 
 
 @handler.command(words=WORDS['ability'], states=State.ALL)
+@save_res
 @default_buttons
 def ability_(req, res, session):
     res.text = txt(TEXT['ability'])
 
 
 @handler.command(words=WORDS['exit'], states=State.ALL)
+@default_buttons
 def exit_(req, res, session):
     if session['state'] == State.MENU:
         res.end_session = True
@@ -66,9 +69,10 @@ def get_list(req, res, session):
         session['state'] = State.USERS_LIST
         completed_desires = Desire.get_completed_desires(req.user_id)
         uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
-        res.text = txt(TEXT['users_list']).format(completed_desires, uncompleted_desires)
+        res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
         session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.user_id, local=True)
+        res.text = res.text + '\nВы не выполнили:\n' + '\n'.join(x[1] for x in uncompleted_desires)
     else:
         session['state'] = State.CHOOSE_TAG
         desire_tags = Desire.get_tags()
@@ -84,7 +88,7 @@ def choose_tag(req, res, session):
     if 'все' in req.tokens:
         session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.tokens, local=False)
-        session['state'] = State.OTHERS_LIST
+        session['state'] = State.VIEW
         res.text = session['users_desire_list'][session['users_list_count']][1]
     else:
         result = Desire.find_by_tags(req.user_id, req.tokens)
@@ -93,18 +97,18 @@ def choose_tag(req, res, session):
         else:
             session['users_list_count'] = 0
             session['users_desire_list'] = result
-            session['state'] = State.OTHERS_LIST
+            session['state'] = State.VIEW
             res.text = session['users_desire_list'][session['users_list_count']][1]
 
 
 """-----------------State.LIST-----------------"""
 
 
-@handler.command(words=WORDS['next'], states=(State.OTHERS_LIST, State.USERS_LIST))
+@handler.command(words=WORDS['next'], states=(State.VIEW, State.USERS_LIST))
 @save_res
 @default_buttons
 def next_desire(req, res, session):
-    if State.OTHERS_LIST:
+    if State.VIEW:
         res.text = Desire.get_random_desire(req.user_id)[1]
     else:
         session['users_list_count'] += 1
@@ -120,7 +124,7 @@ def next_desire(req, res, session):
 @default_buttons
 def go_add_desire(req, res, session):
     res.text = txt(TEXT['go_add'])
-    session['state'] = State.ADD
+    session['state'] = State.ADD_DESIRE
 
 
 @handler.command(words=WORDS['complete'], states=State.USERS_LIST)
@@ -130,7 +134,7 @@ def complete_desire(req, res, session):
     users_desires = Desire.get_desires(req.user_id, local=True)
     for desire in users_desires:
         if 0.5 < sequence(None, req.command, desire.text).ratio():
-            complete_desire(req.user_id, desire.id)
+            Desire.complete_desire(req.user_id, desire.id)
             break
     res.text = txt(TEXT['completed_desire'])
 
@@ -139,8 +143,11 @@ def complete_desire(req, res, session):
 @save_res
 @default_buttons
 def search_desire(req, res, session):
-    session['state'] = State.OTHERS_LIST
+    session['state'] = State.CHOOSE_TAG
+    desire_tags = Desire.get_tags()
+    res.buttons = [button(x) for x in desire_tags]
     res.text = txt(TEXT['other_list'])
+    res.tts += " ".join(desire_tags)
 
 
 """-----------------State.ADD_DESIRE-----------------"""
@@ -152,8 +159,8 @@ def search_desire(req, res, session):
 def add_desire(req, res, session):
     if not req.dangerous:
         res.text = txt(TEXT['add_tag'])
-        session['text_desire'] = req.command.capitalize()
-
+        session['text_desire'] = req.text.capitalize()
+        session['state'] = State.ADD_TAGS
     else:
         res.text = txt(TEXT['else_add'])
 
