@@ -3,6 +3,7 @@ from .strings import TEXT, WORDS, txt, HELP, btn
 from .state import State
 from .ui_helper import default_buttons, save_res
 from .desire_helper import Desire, User
+from difflib import SequenceMatcher as sequence
 
 handler = CommandHandler()
 
@@ -106,7 +107,12 @@ def go_add_desire(req, res, session):
 @save_res
 @default_buttons
 def complete_desire(req, res, session):
-    pass
+    users_desires = Desire.get_desires(req.user_id, local=True)
+    for desire in users_desires:
+        if 0.5 < sequence(None, req.command, desire.text).ratio():
+            complete_desire(req.user_id, desire.id)
+            break
+    res.text = txt(TEXT['completed_desire'])
 
 
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)
