@@ -1,5 +1,5 @@
 from base_skill.skill import CommandHandler, BaseSkill, button
-from .strings import TEXT, WORDS, txt, HELP
+from .strings import TEXT, WORDS, txt, HELP, btn
 from .state import State
 from .ui_helper import default_buttons, save_res
 from .desire_helper import Desire, User
@@ -50,8 +50,8 @@ def exit_(res, req, session):
 @handler.command(words=WORDS['repeat'], states=State.ALL)
 @default_buttons
 def repeat_(res, req, session):
-    res.text = session['last_text']
-    res.tts = session['last_tts']
+    res.text = session['last_text', 'Нечего повторять']
+    res.tts = session.get('last_tts', 'Нечего повторять')
 
 
 """-----------------State.MENU-----------------"""
@@ -63,9 +63,16 @@ def repeat_(res, req, session):
 def get_list(res, req, session):
     if any(word in req.tokens for word in WORDS['my']):
         session['state'] = State.USERS_LIST
+        completed_desires = Desire.get_completed_desires(req.user_id)
+        uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
+        res.text = txt(TEXT['users_list']).format(completed_desires, uncompleted_desires)
 
     else:
         session['state'] = State.OTHERS_LIST
+        desire_tags = Desire.get_tags()
+        res.buttons = [button(x) for x in btn(desire_tags)]
+        res.text = res.tts = txt(TEXT['other_list'])
+        res.tts += " ".join(desire_tags)
 
 
 """-----------------State.OTHERS_LIST-----------------"""
@@ -75,13 +82,6 @@ def get_list(res, req, session):
 @save_res
 @default_buttons
 def next_desire(res, req, session):
-    pass
-
-
-@handler.command(words=WORDS['tags'], states=State.OTHERS_LIST)
-@save_res
-@default_buttons
-def tags(res, req, session):
     pass
 
 
@@ -135,4 +135,3 @@ def add_desire(res, req, session):
 def add_tags(res, req, session):
     res.text = txt(TEXT['ok_add'])
     Desire.add_desire(session['text_desire'], ','.join(req.tokens).strip(','), req.user_id)
-
