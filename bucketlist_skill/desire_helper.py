@@ -64,7 +64,7 @@ class Desire:
                        (user_id, text, tags))
         db.commit()
 
-        desire_id, user_id, text, tags, published, owner_id  = Desire.get_desire(text, usr_id)
+        desire_id, user_id, text, tags, published, owner_id = Desire.get_desire(text, usr_id)
         cursor.execute("insert into user_desire(user_id, desire_id, completed) values(?, ?, ?)",
                        (user_id, desire_id, 0))
         db.commit()
@@ -85,6 +85,25 @@ class Desire:
         if local:
             return cursor.execute(f"select * from user_desire where user_id = {id_}").fetchall()
         return cursor.execute(f"select * from desire where user_id not (select user_id from user_desire)").fetchall()
+
+    @staticmethod
+    def get_completed_desires(usr_id):
+        id_, _ = User.get_user(user_id=usr_id)
+        return cursor.execute(f"select * from user_desire where user_id = {id_} and completed = 1").fetchall()
+
+    @staticmethod
+    def get_uncompleted_desires(usr_id):
+        id_, _ = User.get_user(user_id=usr_id)
+        return cursor.execute(f"select * from user_desire where user_id = {id_} and completed = 0").fetchall()
+
+    @staticmethod
+    def how_many_added(desire_id):
+        return cursor.execute(f"select count(*) from user_desire where desire_id = {desire_id}").fetchone()[0]
+
+    @staticmethod
+    def how_many_completed(desire_id):
+        return cursor.execute(f"select count(*) from user_desire where "
+                              f"desire_id = {desire_id} and completed = 1").fetchone()[0]
 
     @staticmethod
     def get_tags(count=5):
