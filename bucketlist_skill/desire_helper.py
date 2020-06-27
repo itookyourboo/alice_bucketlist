@@ -59,8 +59,38 @@ class User:
 
 class Desire:
     @staticmethod
+    def add_desire(text, tags, usr_id):
+        id_, user_id = User.get_user(user_id=usr_id)
+        cursor.execute("insert into desire(user_id, text, tags, published) values(?, ?, ?, ?)",
+                       (user_id, text, tags, 1))
+        db.commit()
+
+        desire_id, user_id, text, tags, published, owner_id  = Desire.get_desire(text, usr_id)
+        cursor.execute("insert into user_desire(user_id, desire_id, completed) values(?, ?, ?)",
+                       (user_id, desire_id, 0))
+        db.commit()
+
+    @staticmethod
+    def complete_desire(usr_id, desire_id):
+        cursor.execute(f"update user_desire set completed = 1 where desire_id = {desire_id}")
+        db.commit()
+
+    @staticmethod
     def offer_desire(text, usr_id):
         id_, user_id = User.get_user(user_id=usr_id)
+        cursor.execute("insert into desire (text, owner_id, published) values(?, ?, ?)",
+                       (text, id_, 0))
+        db.commit()
+
+    @staticmethod
+    def get_desire(text, usr_id):
+        id_, user_id = User.get_user(user_id=usr_id)
+        return cursor.execute(f"select * from desire where text = '{text}' and owner_id = {id_}").fetchone()
+
+    @staticmethod
+    def add_local_desire(text, usr_id):
+        id_, user_id = User.get_user(user_id=usr_id)
+        cursor.execute("insert into user_desire (text, own")
         cursor.execute("insert into desire (text, owner_id, published) values(?, ?, ?)",
                        (text, id_, 0))
         db.commit()
@@ -71,14 +101,3 @@ class Desire:
         cursor.execute("insert into desire (text, tags, owner_id, published) values(?, ?, ?)",
                        (text, tags, id_, 1))
         db.commit()
-
-    @staticmethod
-    def my_desires(usr_id, tags=''):
-        id_, user_id = User.get_user(user_id=usr_id)
-        cursor.execute("insert")
-
-    @staticmethod
-    def get_tags(count=5, published=True):
-        pub = '2' if published else '0 or published = 1'
-        tags = []
-        desires = cursor.execute(f"select tags from desire where published = {pub}")
