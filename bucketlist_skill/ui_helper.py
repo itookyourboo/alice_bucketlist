@@ -5,6 +5,9 @@ from .strings import btn, BUTTONS
 def default_buttons(func):
     def wrapper(req, res, session):
         func(req, res, session)
+        if session['state'] not in BUTTONS:
+            return
+
         if len(res.buttons) == 0:
             res.buttons = [button(x) for x in btn(BUTTONS.get(session['state'], []))]
         else:
