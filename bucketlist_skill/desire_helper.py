@@ -116,3 +116,14 @@ class Desire:
                 else:
                     tags[t] = 1
         return list(map(lambda x: x[0], sorted(tags.items(), key=lambda x: -x[1])))[:count]
+
+    @staticmethod
+    def find_by_tags(usr_id, tokens):
+        res = []
+        desires = Desire.get_desires(usr_id, local=False)
+        for desire in desires:
+            if any(x in desire[2] for x in tokens):
+                res.append(desire)
+                continue
+
+        return res
