@@ -61,7 +61,7 @@ def repeat_(req, res, session):
 """-----------------State.MENU-----------------"""
 
 
-@handler.command(words=WORDS['list'], states=State.MENU)
+@handler.command(words=WORDS['list'], states=(State.MENU, State.USERS_LIST))
 @save_res
 @default_buttons
 def get_list(req, res, session):
@@ -116,12 +116,9 @@ def choose_tag(req, res, session):
 @save_res
 @default_buttons
 def next_desire(req, res, session):
-    if State.VIEW:
-        res.text = Desire.get_random_desire(req.user_id)[1]
-    else:
-        session['users_list_count'] += 1
-        session['users_list_count'] %= session['users_desire_list']
-        res.text = session['users_desire_list'][session['users_list_count']][1]
+    session['users_list_count'] += 1
+    session['users_list_count'] %= len(session['users_desire_list'])
+    res.text = session['users_desire_list'][session['users_list_count']][1]
 
 
 @handler.command(words=WORDS['add'], states=State.VIEW)
@@ -160,12 +157,12 @@ def complete_desire(req, res, session):
 @save_res
 @default_buttons
 def delete_desire(req, res, session):
-    users_desires = Desire.get_desires(req.user_id, local=True)
-    for desire in users_desires:
-        if 0.5 < sequence(None, req.command, desire.text).ratio():
-            Desire.complete_desire(req.user_id, desire.id)
-            break
-    res.text = txt(TEXT['deleted_desire'])
+    found, desire = Desire.find_by_text(req.user_id, req.text)
+    if found:
+        Desire.complete_desire(req.user_id, desire[0])
+        res.text = txt(TEXT['deleted_desire'])
+    else:
+        res.text = txt(TEXT['ne_ponel'])
 
 
 @handler.command(words=WORDS['search'], states=State.USERS_LIST)

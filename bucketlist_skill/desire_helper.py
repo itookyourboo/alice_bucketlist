@@ -66,6 +66,12 @@ class Desire:
         db.commit()
 
     @staticmethod
+    def delete_desire(usr_id, desire_id):
+        id_, user_id = User.get_user(user_id=usr_id)
+        cursor.execute(f'delete from user_desire where user_id = {user_id} and desire_id = {desire_id}')
+        db.commit()
+
+    @staticmethod
     def add_desire(text, tags, usr_id):
         id_, user_id = User.get_user(user_id=usr_id)
         cursor.execute("insert into desire(owner_id, text, tags) values(?, ?, ?)",
@@ -92,21 +98,22 @@ class Desire:
     def get_desires(usr_id, local=False):
         id_, _ = User.get_user(user_id=usr_id)
         if local:
-            return cursor.execute(f"select * from user_desire where user_id = {id_}").fetchall()
+            return cursor.execute(f"select * from desire where id in ("
+                                  f"select desire_id from user_desire where user_id = {id_})").fetchall()
         return cursor.execute(f"select * from desire where id not in "
                               f"(select desire_id from user_desire where user_id = {id_})").fetchall()
 
     @staticmethod
     def get_completed_desires(usr_id):
         id_, _ = User.get_user(user_id=usr_id)
-        return cursor.execute(f"select * from desire where owner_id in "
-                              f"(select user_id from user_desire where user_id = {id_} and completed = 1)").fetchall()
+        return cursor.execute(f"select * from desire where id in "
+                              f"(select desire_id from user_desire where user_id = {id_} and completed = 1)").fetchall()
 
     @staticmethod
     def get_uncompleted_desires(usr_id):
         id_, _ = User.get_user(user_id=usr_id)
-        return cursor.execute(f"select * from desire where owner_id in "
-                              f"(select user_id from user_desire where user_id = {id_} and completed = 0)").fetchall()
+        return cursor.execute(f"select * from desire where id in "
+                              f"(select desire_id from user_desire where user_id = {id_} and completed = 0)").fetchall()
 
     @staticmethod
     def how_many_added(desire_id):
