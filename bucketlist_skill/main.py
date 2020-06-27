@@ -51,7 +51,7 @@ def exit_(req, res, session):
 @handler.command(words=WORDS['repeat'], states=State.ALL)
 @default_buttons
 def repeat_(req, res, session):
-    res.text = session('last_text', 'Нечего повторять')
+    res.text = session.get('last_text', 'Нечего повторять')
     res.tts = session.get('last_tts', 'Нечего повторять')
 
 
