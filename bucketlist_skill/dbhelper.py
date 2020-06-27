@@ -3,7 +3,7 @@ from flask_app import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_app_id = db.Column(db.Integer, unique=False, nullable=False)
+    user_app_id = db.Column(db.String, unique=False, nullable=False)
 
     def __repr__(self):
         return "<User {} {}>".format(self.id, self.user_app_id)
@@ -32,7 +32,7 @@ class Desire(db.Model):
     tags = db.Column(db.String, unique=False, nullable=False)
     text = db.Column(db.String, unique=False, nullable=False)
     published = db.Column(db.Bool, unique=False, nullable=False)
-    owner_id = db.Column(db.Integer, unique=False, nullable=True)
+    owner_id = db.Column(db.String, unique=False, nullable=True)
 
     def __repr__(self):
         return "<Desire {} {} {} {}>".format(self.id, self.tags, self.text, self.published)
@@ -58,7 +58,7 @@ class Desire(db.Model):
 
 class UsersDesire(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, unique=False, nullable=False)
+    user_id = db.Column(db.String, unique=False, nullable=False)
     desire_id = db.Column(db.Integer, unique=False, nullable=False)
     completed = db.Column(db.Bool, unique=False, nullable=False)
 
