@@ -84,7 +84,8 @@ class Desire:
         id_, _ = User.get_user(user_id=usr_id)
         if local:
             return cursor.execute(f"select * from user_desire where user_id = {id_}").fetchall()
-        return cursor.execute(f"select * from desire where user_id not (select user_id from user_desire)").fetchall()
+        return cursor.execute(f"select * from desire where user_id not in "
+                              f"(select user_id from user_desire where user_id = {id_})").fetchall()
 
     @staticmethod
     def get_completed_desires(usr_id):
@@ -127,3 +128,10 @@ class Desire:
                 continue
 
         return res
+
+    @staticmethod
+    def get_random_desire(usr_id):
+        id_, _ = User.get_user(user_id=usr_id)
+        return cursor.execute(f"select * from desire where user_id not in "
+                              f"(select user_id from user_desire where user_id = {id_}) "
+                              f"order by random() limit 1").fetchone()
