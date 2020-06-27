@@ -66,7 +66,7 @@ def get_list(req, res, session):
         session['state'] = State.USERS_LIST
         completed_desires = Desire.get_completed_desires(req.user_id)
         uncompleted_desires = Desire.get_uncompleted_desires(req.user_id)
-        res.text = txt(TEXT['users_list']).format(completed_desires, uncompleted_desires)
+        res.text = txt(TEXT['users_list']).format(len(completed_desires), len(uncompleted_desires))
         session['users_list_count'] = 0
         session['users_desire_list'] = Desire.get_desires(req.user_id, local=True)
     else:
@@ -168,8 +168,8 @@ def add_tags(req, res, session):
     if any(word in req.tokens for word in WORDS['no']):
         Desire.add_desire(session['text_desire'], 'все', req.user_id)
     else:
-        res.text = txt(TEXT['ok_add'])
         Desire.add_desire(session['text_desire'], ','.join(req.tokens).strip(','), req.user_id)
+    res.text = txt(TEXT['ok_add'])
 
 
 @handler.undefined_command(states=State.ALL)
