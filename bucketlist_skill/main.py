@@ -50,7 +50,7 @@ def exit_(req, res, session):
 @handler.command(words=WORDS['repeat'], states=State.ALL)
 @default_buttons
 def repeat_(req, res, session):
-    res.text = session['last_text', 'Нечего повторять']
+    res.text = session('last_text', 'Нечего повторять')
     res.tts = session.get('last_tts', 'Нечего повторять')
 
 
@@ -84,10 +84,11 @@ def get_list(req, res, session):
 @default_buttons
 def next_desire(req, res, session):
     if State.OTHERS_LIST:
-        res.text = Desire.get_random_desire(req.user_id).text
+        res.text = Desire.get_random_desire(req.user_id)[1]
     else:
         session['users_list_count'] += 1
-        res.text = session['users_desire_list'][session['users_list_count']].text
+        session['users_list_count'] %= session['users_desire_list']
+        res.text = session['users_desire_list'][session['users_list_count']][1]
 
 
 """-----------------State.USERS_LIST-----------------"""
